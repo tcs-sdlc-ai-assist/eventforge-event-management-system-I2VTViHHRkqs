@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="en" class="h-full">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}EventForge{% endblock %}</title>
+    <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🔥</text></svg>">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        primary: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            200: '#bfdbfe',
+                            300: '#93c5fd',
+                            400: '#60a5fa',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            800: '#1e40af',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        [x-cloak] { display: none !important; }
+    </style>
+    {% block head_extra %}{% endblock %}
+</head>
+<body class="h-full bg-gray-50 text-gray-900 flex flex-col min-h-screen">
+    <nav class="sticky top-0 z-50 bg-white shadow-md border-b border-gray-200">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex items-center justify-between h-16">
+                <div class="flex items-center flex-shrink-0">
+                    <a href="/" class="flex items-center space-x-2 text-primary-600 hover:text-primary-700 transition-colors">
+                        <span class="text-2xl">🔥</span>
+                        <span class="text-xl font-bold tracking-tight">EventForge</span>
+                    </a>
+                </div>
+
+                <div class="hidden md:flex items-center space-x-1">
+                    <a href="/events" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        Browse Events
+                    </a>
+                    {% if user %}
+                        {% if user.role == 'organizer' %}
+                            <a href="/organizer/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                                My Dashboard
+                            </a>
+                            <a href="/events/new" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                                Create Event
+                            </a>
+                        {% elif user.role == 'attendee' %}
+                            <a href="/attendee/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                                My Dashboard
+                            </a>
+                            <a href="/attendee/tickets" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                                My Tickets
+                            </a>
+                        {% elif user.role == 'admin' %}
+                            <a href="/admin/dashboard" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                                Admin Dashboard
+                            </a>
+                            <a href="/admin/categories" class="px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                                Categories
+                            </a>
+                        {% endif %}
+                    {% endif %}
+                </div>
+
+                <div class="hidden md:flex items-center space-x-3">
+                    {% if user %}
+                        <div class="relative" id="user-dropdown-container">
+                            <button type="button" id="user-dropdown-btn" class="flex items-center space-x-2 px-3 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-1">
+                                <div class="w-8 h-8 rounded-full bg-primary-500 flex items-center justify-center text-white text-sm font-semibold">
+                                    {{ user.display_name[0] | upper }}
+                                </div>
+                                <span>{{ user.display_name }}</span>
+                                <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"/>
+                                </svg>
+                            </button>
+                            <div id="user-dropdown-menu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-lg shadow-lg border border-gray-200 py-1 z-50">
+                                <div class="px-4 py-2 border-b border-gray-100">
+                                    <p class="text-sm font-medium text-gray-900">{{ user.display_name }}</p>
+                                    <p class="text-xs text-gray-500">{{ user.email }}</p>
+                                    <span class="inline-block mt-1 px-2 py-0.5 text-xs font-medium rounded-full
+                                        {% if user.role == 'admin' %}bg-red-100 text-red-700
+                                        {% elif user.role == 'organizer' %}bg-blue-100 text-blue-700
+                                        {% else %}bg-green-100 text-green-700{% endif %}">
+                                        {{ user.role | capitalize }}
+                                    </span>
+                                </div>
+                                <a href="/profile" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 transition-colors">
+                                    Profile Settings
+                                </a>
+                                <form method="POST" action="/logout" class="m-0">
+                                    <button type="submit" class="w-full text-left px-4 py-2 text-sm text-red-600 hover:bg-red-50 transition-colors">
+                                        Sign Out
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+                    {% else %}
+                        <a href="/login" class="px-4 py-2 rounded-lg text-sm font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            Sign In
+                        </a>
+                        <a href="/register" class="px-4 py-2 rounded-lg text-sm font-medium text-white bg-primary-600 hover:bg-primary-700 transition-colors shadow-sm">
+                            Sign Up
+                        </a>
+                    {% endif %}
+                </div>
+
+                <div class="md:hidden flex items-center">
+                    <button type="button" id="mobile-menu-btn" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-700 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-primary-500 transition-colors" aria-expanded="false" aria-label="Toggle navigation menu">
+                        <svg id="mobile-menu-icon-open" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        </svg>
+                        <svg id="mobile-menu-icon-close" class="hidden w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <div id="mobile-menu" class="hidden md:hidden border-t border-gray-200 bg-white">
+            <div class="px-4 py-3 space-y-1">
+                <a href="/events" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                    Browse Events
+                </a>
+                {% if user %}
+                    {% if user.role == 'organizer' %}
+                        <a href="/organizer/dashboard" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            My Dashboard
+                        </a>
+                        <a href="/events/new" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            Create Event
+                        </a>
+                    {% elif user.role == 'attendee' %}
+                        <a href="/attendee/dashboard" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            My Dashboard
+                        </a>
+                        <a href="/attendee/tickets" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            My Tickets
+                        </a>
+                    {% elif user.role == 'admin' %}
+                        <a href="/admin/dashboard" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            Admin Dashboard
+                        </a>
+                        <a href="/admin/categories" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                            Categories
+                        </a>
+                    {% endif %}
+                {% endif %}
+            </div>
+            <div class="border-t border-gray-200 px-4 py-3">
+                {% if user %}
+                    <div class="flex items-center space-x-3 px-3 py-2">
+                        <div class="w-10 h-10 rounded-full bg-primary-500 flex items-center justify-center text-white text-sm font-semibold">
+                            {{ user.display_name[0] | upper }}
+                        </div>
+                        <div>
+                            <p class="text-sm font-medium text-gray-900">{{ user.display_name }}</p>
+                            <p class="text-xs text-gray-500">{{ user.email }}</p>
+                        </div>
+                    </div>
+                    <a href="/profile" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        Profile Settings
+                    </a>
+                    <form method="POST" action="/logout" class="m-0">
+                        <button type="submit" class="w-full text-left px-3 py-2 rounded-lg text-base font-medium text-red-600 hover:bg-red-50 transition-colors">
+                            Sign Out
+                        </button>
+                    </form>
+                {% else %}
+                    <a href="/login" class="block px-3 py-2 rounded-lg text-base font-medium text-gray-700 hover:text-primary-600 hover:bg-primary-50 transition-colors">
+                        Sign In
+                    </a>
+                    <a href="/register" class="block px-3 py-2 rounded-lg text-base font-medium text-white bg-primary-600 hover:bg-primary-700 text-center transition-colors shadow-sm">
+                        Sign Up
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+    </nav>
+
+    {% with messages = get_flashed_messages(with_categories=true) if get_flashed_messages is defined else [] %}
+        {% if messages %}
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mt-4 space-y-2">
+                {% for category, message in messages %}
+                    <div class="flash-message flex items-center justify-between px-4 py-3 rounded-lg text-sm font-medium
+                        {% if category == 'success' %}bg-green-50 text-green-800 border border-green-200
+                        {% elif category == 'error' or category == 'danger' %}bg-red-50 text-red-800 border border-red-200
+                        {% elif category == 'warning' %}bg-yellow-50 text-yellow-800 border border-yellow-200
+                        {% else %}bg-blue-50 text-blue-800 border border-blue-200{% endif %}">
+                        <span>{{ message }}</span>
+                        <button type="button" onclick="this.parentElement.remove()" class="ml-4 text-current opacity-50 hover:opacity-100 transition-opacity">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    </div>
+                {% endfor %}
+            </div>
+        {% endif %}
+    {% endwith %}
+
+    <main class="flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer class="bg-white border-t border-gray-200 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div>
+                    <div class="flex items-center space-x-2 text-primary-600 mb-3">
+                        <span class="text-xl">🔥</span>
+                        <span class="text-lg font-bold tracking-tight">EventForge</span>
+                    </div>
+                    <p class="text-sm text-gray-500">Discover, create, and manage events with ease. Your all-in-one event management platform.</p>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Quick Links</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/events" class="text-sm text-gray-500 hover:text-primary-600 transition-colors">Browse Events</a></li>
+                        {% if not user %}
+                            <li><a href="/register" class="text-sm text-gray-500 hover:text-primary-600 transition-colors">Create Account</a></li>
+                            <li><a href="/login" class="text-sm text-gray-500 hover:text-primary-600 transition-colors">Sign In</a></li>
+                        {% endif %}
+                    </ul>
+                </div>
+                <div>
+                    <h3 class="text-sm font-semibold text-gray-900 uppercase tracking-wider mb-3">Platform</h3>
+                    <ul class="space-y-2">
+                        <li><a href="/about" class="text-sm text-gray-500 hover:text-primary-600 transition-colors">About</a></li>
+                        <li><a href="/healthz" class="text-sm text-gray-500 hover:text-primary-600 transition-colors">System Status</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="mt-8 pt-6 border-t border-gray-200 text-center">
+                <p class="text-sm text-gray-400">&copy; {{ now().year if now is defined else "2024" }} EventForge. All rights reserved.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            var mobileMenuBtn = document.getElementById('mobile-menu-btn');
+            var mobileMenu = document.getElementById('mobile-menu');
+            var iconOpen = document.getElementById('mobile-menu-icon-open');
+            var iconClose = document.getElementById('mobile-menu-icon-close');
+
+            if (mobileMenuBtn && mobileMenu) {
+                mobileMenuBtn.addEventListener('click', function() {
+                    var isHidden = mobileMenu.classList.contains('hidden');
+                    mobileMenu.classList.toggle('hidden');
+                    iconOpen.classList.toggle('hidden');
+                    iconClose.classList.toggle('hidden');
+                    mobileMenuBtn.setAttribute('aria-expanded', isHidden ? 'true' : 'false');
+                });
+            }
+
+            var dropdownBtn = document.getElementById('user-dropdown-btn');
+            var dropdownMenu = document.getElementById('user-dropdown-menu');
+
+            if (dropdownBtn && dropdownMenu) {
+                dropdownBtn.addEventListener('click', function(e) {
+                    e.stopPropagation();
+                    dropdownMenu.classList.toggle('hidden');
+                });
+
+                document.addEventListener('click', function(e) {
+                    var container = document.getElementById('user-dropdown-container');
+                    if (container && !container.contains(e.target)) {
+                        dropdownMenu.classList.add('hidden');
+                    }
+                });
+            }
+
+            var flashMessages = document.querySelectorAll('.flash-message');
+            flashMessages.forEach(function(msg) {
+                setTimeout(function() {
+                    msg.style.transition = 'opacity 0.3s ease-out';
+                    msg.style.opacity = '0';
+                    setTimeout(function() { msg.remove(); }, 300);
+                }, 5000);
+            });
+        });
+    </script>
+    <script src="/static/js/app.js"></script>
+    {% block scripts %}{% endblock %}
+</body>
+</html>

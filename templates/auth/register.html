@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% block title %}Sign Up — EventForge{% endblock %}
+
+{% block content %}
+<div class="min-h-[80vh] flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+    <div class="w-full max-w-md">
+        <div class="text-center mb-8">
+            <span class="text-4xl">🔥</span>
+            <h2 class="mt-4 text-3xl font-bold tracking-tight text-gray-900">Create your account</h2>
+            <p class="mt-2 text-sm text-gray-600">
+                Already have an account?
+                <a href="/login" class="font-medium text-primary-600 hover:text-primary-500 transition-colors">Sign in</a>
+            </p>
+        </div>
+
+        <div class="bg-white shadow-lg rounded-xl border border-gray-200 p-8">
+            {% if error %}
+                <div class="mb-6 flex items-center gap-2 px-4 py-3 rounded-lg bg-red-50 border border-red-200 text-red-800 text-sm font-medium">
+                    <svg class="w-5 h-5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                    <span>{{ error }}</span>
+                </div>
+            {% endif %}
+
+            <form method="POST" action="/register" class="space-y-5" data-validate>
+                <div>
+                    <label for="display_name" class="block text-sm font-medium text-gray-700 mb-1">Display Name</label>
+                    <input
+                        type="text"
+                        id="display_name"
+                        name="display_name"
+                        value="{{ form_data.display_name if form_data and form_data.display_name else '' }}"
+                        required
+                        minlength="2"
+                        placeholder="Your full name"
+                        class="w-full rounded-lg border {% if errors and errors.display_name %}border-red-500 focus:border-red-500 focus:ring-red-500{% else %}border-gray-300 focus:border-primary-500 focus:ring-primary-500{% endif %} shadow-sm sm:text-sm px-3 py-2.5 transition-colors"
+                    />
+                    {% if errors and errors.display_name %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.display_name }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="email" class="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
+                    <input
+                        type="email"
+                        id="email"
+                        name="email"
+                        value="{{ form_data.email if form_data and form_data.email else '' }}"
+                        required
+                        placeholder="you@example.com"
+                        class="w-full rounded-lg border {% if errors and errors.email %}border-red-500 focus:border-red-500 focus:ring-red-500{% else %}border-gray-300 focus:border-primary-500 focus:ring-primary-500{% endif %} shadow-sm sm:text-sm px-3 py-2.5 transition-colors"
+                    />
+                    {% if errors and errors.email %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.email }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="username" class="block text-sm font-medium text-gray-700 mb-1">Username</label>
+                    <input
+                        type="text"
+                        id="username"
+                        name="username"
+                        value="{{ form_data.username if form_data and form_data.username else '' }}"
+                        required
+                        minlength="3"
+                        placeholder="Choose a username"
+                        class="w-full rounded-lg border {% if errors and errors.username %}border-red-500 focus:border-red-500 focus:ring-red-500{% else %}border-gray-300 focus:border-primary-500 focus:ring-primary-500{% endif %} shadow-sm sm:text-sm px-3 py-2.5 transition-colors"
+                    />
+                    {% if errors and errors.username %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.username }}</p>
+                    {% endif %}
+                    <p class="mt-1 text-xs text-gray-500">Letters, numbers, hyphens, and underscores only</p>
+                </div>
+
+                <div>
+                    <label for="password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
+                    <input
+                        type="password"
+                        id="password"
+                        name="password"
+                        required
+                        minlength="6"
+                        placeholder="At least 6 characters"
+                        class="w-full rounded-lg border {% if errors and errors.password %}border-red-500 focus:border-red-500 focus:ring-red-500{% else %}border-gray-300 focus:border-primary-500 focus:ring-primary-500{% endif %} shadow-sm sm:text-sm px-3 py-2.5 transition-colors"
+                    />
+                    {% if errors and errors.password %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.password }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label for="confirm_password" class="block text-sm font-medium text-gray-700 mb-1">Confirm Password</label>
+                    <input
+                        type="password"
+                        id="confirm_password"
+                        name="confirm_password"
+                        required
+                        minlength="6"
+                        placeholder="Re-enter your password"
+                        class="w-full rounded-lg border {% if errors and errors.confirm_password %}border-red-500 focus:border-red-500 focus:ring-red-500{% else %}border-gray-300 focus:border-primary-500 focus:ring-primary-500{% endif %} shadow-sm sm:text-sm px-3 py-2.5 transition-colors"
+                    />
+                    {% if errors and errors.confirm_password %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.confirm_password }}</p>
+                    {% endif %}
+                </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700 mb-2">I want to</label>
+                    <div class="grid grid-cols-2 gap-3">
+                        <label class="relative flex items-center justify-center gap-2 px-4 py-3 rounded-lg border cursor-pointer transition-colors hover:bg-primary-50 hover:border-primary-300 {% if form_data and form_data.role == 'attendee' %}border-primary-500 bg-primary-50 ring-2 ring-primary-500 ring-offset-1{% else %}border-gray-300 bg-white{% endif %}">
+                            <input
+                                type="radio"
+                                name="role"
+                                value="attendee"
+                                {% if not form_data or not form_data.role or form_data.role == 'attendee' %}checked{% endif %}
+                                class="sr-only"
+                                onchange="updateRoleSelection(this)"
+                            />
+                            <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">Attend Events</span>
+                        </label>
+                        <label class="relative flex items-center justify-center gap-2 px-4 py-3 rounded-lg border cursor-pointer transition-colors hover:bg-primary-50 hover:border-primary-300 {% if form_data and form_data.role == 'organizer' %}border-primary-500 bg-primary-50 ring-2 ring-primary-500 ring-offset-1{% else %}border-gray-300 bg-white{% endif %}">
+                            <input
+                                type="radio"
+                                name="role"
+                                value="organizer"
+                                {% if form_data and form_data.role == 'organizer' %}checked{% endif %}
+                                class="sr-only"
+                                onchange="updateRoleSelection(this)"
+                            />
+                            <svg class="w-5 h-5 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                            </svg>
+                            <span class="text-sm font-medium text-gray-700">Organize Events</span>
+                        </label>
+                    </div>
+                    {% if errors and errors.role %}
+                        <p class="mt-1 text-sm text-red-600">{{ errors.role }}</p>
+                    {% endif %}
+                </div>
+
+                <div class="pt-2">
+                    <button
+                        type="submit"
+                        class="w-full flex justify-center items-center px-4 py-2.5 rounded-lg text-sm font-semibold text-white bg-primary-600 hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 shadow-sm transition-colors"
+                    >
+                        Create Account
+                    </button>
+                </div>
+            </form>
+
+            <p class="mt-6 text-center text-xs text-gray-500">
+                By creating an account, you agree to our terms of service and privacy policy.
+            </p>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+    function updateRoleSelection(radio) {
+        var labels = radio.closest('.grid').querySelectorAll('label');
+        labels.forEach(function(label) {
+            var input = label.querySelector('input[type="radio"]');
+            if (input && input.checked) {
+                label.classList.add('border-primary-500', 'bg-primary-50', 'ring-2', 'ring-primary-500', 'ring-offset-1');
+                label.classList.remove('border-gray-300', 'bg-white');
+            } else {
+                label.classList.remove('border-primary-500', 'bg-primary-50', 'ring-2', 'ring-primary-500', 'ring-offset-1');
+                label.classList.add('border-gray-300', 'bg-white');
+            }
+        });
+    }
+</script>
+{% endblock %}

@@ -1,0 +1,255 @@
+{% extends "base.html" %}
+
+{% block title %}Browse Events — EventForge{% endblock %}
+
+{% block content %}
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+    <div class="mb-8">
+        <h1 class="text-3xl font-bold text-gray-900">Browse Events</h1>
+        <p class="mt-2 text-gray-600">Discover upcoming events and find something you love.</p>
+    </div>
+
+    <form method="GET" action="/events" class="mb-8 bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div>
+                <label for="event-search-input" class="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                <input type="text" id="event-search-input" name="keyword" value="{{ keyword or '' }}"
+                    placeholder="Search events..."
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border">
+            </div>
+
+            <div>
+                <label for="category-filter" class="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                <select id="category-filter" name="category_id"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border">
+                    <option value="">All Categories</option>
+                    {% for cat in categories %}
+                        <option value="{{ cat.id }}" {% if category_id is defined and category_id == cat.id %}selected{% endif %}>{{ cat.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <div>
+                <label for="date-from" class="block text-sm font-medium text-gray-700 mb-1">From Date</label>
+                <input type="date" id="date-from" name="date_from" value="{{ date_from or '' }}"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border">
+            </div>
+
+            <div>
+                <label for="date-to" class="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <input type="date" id="date-to" name="date_to" value="{{ date_to or '' }}"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border">
+            </div>
+        </div>
+
+        <div class="mt-4 flex flex-col sm:flex-row items-start sm:items-end gap-4">
+            <div>
+                <label for="status-filter" class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+                <select id="status-filter" name="status"
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border">
+                    <option value="all" {% if status is not defined or status == 'all' %}selected{% endif %}>All Events</option>
+                    <option value="upcoming" {% if status is defined and status == 'upcoming' %}selected{% endif %}>Upcoming</option>
+                    <option value="past" {% if status is defined and status == 'past' %}selected{% endif %}>Past</option>
+                </select>
+            </div>
+
+            <div>
+                <label for="city-filter" class="block text-sm font-medium text-gray-700 mb-1">City</label>
+                <input type="text" id="city-filter" name="city" value="{{ city or '' }}"
+                    placeholder="Filter by city..."
+                    class="w-full rounded-md border-gray-300 shadow-sm focus:border-primary-500 focus:ring-primary-500 sm:text-sm px-3 py-2 border">
+            </div>
+
+            <div class="flex items-end gap-2">
+                <button type="submit"
+                    class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors shadow-sm">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                    </svg>
+                    Search
+                </button>
+                <a href="/events"
+                    class="inline-flex items-center px-4 py-2 bg-gray-100 text-gray-700 text-sm font-medium rounded-md hover:bg-gray-200 focus:outline-none focus:ring-2 focus:ring-gray-400 focus:ring-offset-2 transition-colors">
+                    Clear
+                </a>
+            </div>
+        </div>
+    </form>
+
+    {% if events and events | length > 0 %}
+        <div class="mb-4 flex items-center justify-between">
+            <p class="text-sm text-gray-600">
+                Showing {{ events | length }} event{{ 's' if events | length != 1 else '' }}{% if total_count is defined %} of {{ total_count }}{% endif %}
+            </p>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+            {% for event in events %}
+                <a href="/events/{{ event.id }}" class="group block bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden hover:shadow-md hover:border-primary-200 transition-all duration-200">
+                    <div class="h-2 {% if event.category_color is defined and event.category_color %}{{ event.category_color }}{% else %}bg-primary-500{% endif %}"></div>
+                    <div class="p-5">
+                        <div class="flex items-start justify-between gap-2 mb-3">
+                            <h3 class="text-lg font-semibold text-gray-900 group-hover:text-primary-600 transition-colors line-clamp-2">
+                                {{ event.title }}
+                            </h3>
+                            {% if event.category_name is defined and event.category_name %}
+                                <span class="inline-flex items-center flex-shrink-0 px-2.5 py-0.5 rounded-full text-xs font-medium bg-primary-50 text-primary-700 border border-primary-100">
+                                    {{ event.category_name }}
+                                </span>
+                            {% endif %}
+                        </div>
+
+                        <div class="space-y-2 mb-4">
+                            <div class="flex items-center text-sm text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span>{{ event.start_datetime.strftime('%b %d, %Y at %I:%M %p') if event.start_datetime else 'TBD' }}</span>
+                            </div>
+
+                            <div class="flex items-center text-sm text-gray-600">
+                                <svg class="w-4 h-4 mr-2 text-gray-400 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                <span class="truncate">{{ event.venue_name }}{% if event.city %}, {{ event.city }}{% endif %}</span>
+                            </div>
+                        </div>
+
+                        <div class="flex items-center justify-between pt-3 border-t border-gray-100">
+                            <div class="flex items-center text-sm">
+                                <svg class="w-4 h-4 mr-1.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                </svg>
+                                {% if event.registered_count is defined %}
+                                    <span class="text-gray-600">{{ event.registered_count }} / {{ event.total_capacity }}</span>
+                                {% else %}
+                                    <span class="text-gray-600">{{ event.total_capacity }} spots</span>
+                                {% endif %}
+                            </div>
+
+                            {% if event.registered_count is defined and event.total_capacity > 0 %}
+                                {% set pct = ((event.registered_count / event.total_capacity) * 100) | int %}
+                                <div class="flex items-center gap-2">
+                                    <div class="w-16 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                                        <div class="h-full rounded-full {% if pct >= 90 %}bg-red-500{% elif pct >= 70 %}bg-yellow-500{% else %}bg-green-500{% endif %}"
+                                            style="width: {{ pct if pct <= 100 else 100 }}%"></div>
+                                    </div>
+                                    {% if pct >= 100 %}
+                                        <span class="text-xs font-medium text-red-600">Full</span>
+                                    {% elif pct >= 90 %}
+                                        <span class="text-xs font-medium text-red-600">Almost full</span>
+                                    {% endif %}
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </a>
+            {% endfor %}
+        </div>
+
+        {% if total_pages is defined and total_pages > 1 %}
+            <nav class="mt-8 flex items-center justify-center" aria-label="Pagination">
+                <div class="flex items-center gap-1">
+                    {% if page > 1 %}
+                        <a href="/events?keyword={{ keyword or '' }}&category_id={{ category_id or '' }}&date_from={{ date_from or '' }}&date_to={{ date_to or '' }}&status={{ status or 'all' }}&city={{ city or '' }}&page={{ page - 1 }}"
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            Previous
+                        </a>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
+                            <svg class="w-4 h-4 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                            </svg>
+                            Previous
+                        </span>
+                    {% endif %}
+
+                    {% set start_page = [1, page - 2] | max %}
+                    {% set end_page = [total_pages, page + 2] | min %}
+
+                    {% if start_page > 1 %}
+                        <a href="/events?keyword={{ keyword or '' }}&category_id={{ category_id or '' }}&date_from={{ date_from or '' }}&date_to={{ date_to or '' }}&status={{ status or 'all' }}&city={{ city or '' }}&page=1"
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            1
+                        </a>
+                        {% if start_page > 2 %}
+                            <span class="inline-flex items-center px-2 py-2 text-sm text-gray-400">…</span>
+                        {% endif %}
+                    {% endif %}
+
+                    {% for p in range(start_page, end_page + 1) %}
+                        {% if p == page %}
+                            <span class="inline-flex items-center px-3 py-2 text-sm font-medium text-white bg-primary-600 border border-primary-600 rounded-md">
+                                {{ p }}
+                            </span>
+                        {% else %}
+                            <a href="/events?keyword={{ keyword or '' }}&category_id={{ category_id or '' }}&date_from={{ date_from or '' }}&date_to={{ date_to or '' }}&status={{ status or 'all' }}&city={{ city or '' }}&page={{ p }}"
+                                class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                                {{ p }}
+                            </a>
+                        {% endif %}
+                    {% endfor %}
+
+                    {% if end_page < total_pages %}
+                        {% if end_page < total_pages - 1 %}
+                            <span class="inline-flex items-center px-2 py-2 text-sm text-gray-400">…</span>
+                        {% endif %}
+                        <a href="/events?keyword={{ keyword or '' }}&category_id={{ category_id or '' }}&date_from={{ date_from or '' }}&date_to={{ date_to or '' }}&status={{ status or 'all' }}&city={{ city or '' }}&page={{ total_pages }}"
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            {{ total_pages }}
+                        </a>
+                    {% endif %}
+
+                    {% if page < total_pages %}
+                        <a href="/events?keyword={{ keyword or '' }}&category_id={{ category_id or '' }}&date_from={{ date_from or '' }}&date_to={{ date_to or '' }}&status={{ status or 'all' }}&city={{ city or '' }}&page={{ page + 1 }}"
+                            class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md hover:bg-gray-50 transition-colors">
+                            Next
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </a>
+                    {% else %}
+                        <span class="inline-flex items-center px-3 py-2 text-sm font-medium text-gray-400 bg-gray-50 border border-gray-200 rounded-md cursor-not-allowed">
+                            Next
+                            <svg class="w-4 h-4 ml-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                            </svg>
+                        </span>
+                    {% endif %}
+                </div>
+            </nav>
+        {% endif %}
+
+    {% else %}
+        <div class="text-center py-16 bg-white rounded-xl shadow-sm border border-gray-200">
+            <svg class="mx-auto h-16 w-16 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            <h3 class="mt-4 text-lg font-semibold text-gray-900">No events found</h3>
+            <p class="mt-2 text-sm text-gray-500 max-w-md mx-auto">
+                {% if keyword or category_id or date_from or date_to or city %}
+                    No events match your search criteria. Try adjusting your filters or
+                    <a href="/events" class="text-primary-600 hover:text-primary-700 font-medium">clear all filters</a>.
+                {% else %}
+                    There are no events available right now. Check back soon!
+                {% endif %}
+            </p>
+            {% if user and user.role == 'organizer' %}
+                <div class="mt-6">
+                    <a href="/events/new"
+                        class="inline-flex items-center px-4 py-2 bg-primary-600 text-white text-sm font-medium rounded-md hover:bg-primary-700 focus:outline-none focus:ring-2 focus:ring-primary-500 focus:ring-offset-2 transition-colors shadow-sm">
+                        <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                        </svg>
+                        Create an Event
+                    </a>
+                </div>
+            {% endif %}
+        </div>
+    {% endif %}
+</div>
+{% endblock %}
